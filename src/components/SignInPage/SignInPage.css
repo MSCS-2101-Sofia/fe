@@ -1,0 +1,11 @@
+.container {
+  margin-top: 50px; /* Adds space at the top */
+}
+
+.form-container {
+  margin: 0 auto; /* Center the form horizontally */
+  padding: 20px;
+  width: 100%;
+  max-width: 1200px; /* Maximum width */
+  min-width: 800px; /* Minimum width */
+}

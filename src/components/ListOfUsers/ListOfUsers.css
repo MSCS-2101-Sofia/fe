@@ -1,0 +1,8 @@
+.custom-table-header {
+  background-color: #007bff; /* Bootstrap primary color */
+  color: white;
+}
+
+.custom-button {
+  width: 100%; /* Makes the button fill the cell */
+}
