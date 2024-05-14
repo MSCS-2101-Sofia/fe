@@ -51,7 +51,7 @@ const ListOfUsers = () => {
     {
       id: 6,
       username: "DianaIngram",
-      location: "Phoenix",
+      city: "Phoenix",
       tennisLevel: "Advanced",
       gender: "Female",
       phoneNumber: "678-901-2345",
@@ -60,7 +60,7 @@ const ListOfUsers = () => {
     {
       id: 7,
       username: "EvanJobs",
-      location: "Philadelphia",
+      city: "Philadelphia",
       tennisLevel: "Beginner",
       gender: "Male",
       phoneNumber: "789-012-3456",
@@ -69,7 +69,7 @@ const ListOfUsers = () => {
     {
       id: 8,
       username: "FionaLarson",
-      location: "San Antonio",
+      city: "San Antonio",
       tennisLevel: "Intermediate",
       gender: "Female",
       phoneNumber: "890-123-4567",
@@ -78,7 +78,7 @@ const ListOfUsers = () => {
     {
       id: 9,
       username: "GeorgeKing",
-      location: "San Diego",
+      city: "San Diego",
       tennisLevel: "Beginner",
       gender: "Male",
       phoneNumber: "901-234-5678",
@@ -87,56 +87,66 @@ const ListOfUsers = () => {
     {
       id: 10,
       username: "HelenSpecter",
-      location: "Dallas",
+      city: "Dallas",
       tennisLevel: "Advanced",
       gender: "Female",
       phoneNumber: "012-345-6789",
       matchStatus: "none",
     },
   ]);
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const [errors, setErrors] = useState({}); // State to hold error messages
-
-  // Fetch users from the backend on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get("https://your-api-url.com/api/users");
-        setUsers(response.data); // Assuming response.data contains the array of users
+        setUsers(response.data);
       } catch (error) {
-        console.error("Error fetching users", error);
         setErrors({ fetch: "Failed to fetch users. Please try again later." });
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
   }, []);
 
   const handleRequest = async (id, action) => {
+    setIsUpdating(true);
     try {
       const response = await axios.patch(
         `https://your-api-url.com/api/match-requests/${id}`,
-        { matchStatus: action },
+        { matchStatus: action }
       );
       const updatedUser = response.data;
       setUsers(users.map((user) => (user.id === id ? updatedUser : user)));
-      setErrors({}); // Clear any existing errors
+      setErrors({});
     } catch (error) {
-      console.error("Error updating match request", error);
       setErrors({
         update: `Failed to update match status for ${id}. Please try again.`,
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
+
+  if (isLoading) {
+    return <div className="container mt-5">Loading...</div>;
+  }
 
   return (
     <div className="container mt-5">
       <h2>Users Available for Matches</h2>
+      {errors.fetch && (
+        <div className="alert alert-danger">{errors.fetch}</div>
+      )}
       <div className="table-responsive">
         <table className="table table-striped table-hover">
           <thead>
             <tr>
               <th>Username</th>
-              <th>Location</th>
+              <th>City</th>
               <th>Tennis Level</th>
               <th>Gender</th>
               <th>Phone</th>
@@ -147,7 +157,7 @@ const ListOfUsers = () => {
             {users.map((user) => (
               <tr key={user.id}>
                 <td className="text-center align-middle">{user.username}</td>
-                <td className="text-center align-middle">{user.location}</td>
+                <td className="text-center align-middle">{user.city}</td>
                 <td className="text-center align-middle">{user.tennisLevel}</td>
                 <td className="text-center align-middle">{user.gender}</td>
                 <td className="text-center align-middle">
@@ -160,8 +170,9 @@ const ListOfUsers = () => {
                     <button
                       onClick={() => handleRequest(user.id, "requested")}
                       className="btn btn-primary"
+                      disabled={isUpdating}
                     >
-                      Send Match Request
+                      {isUpdating ? "Sending..." : "Send Match Request"}
                     </button>
                   )}
                   {user.matchStatus === "requested" && (
@@ -169,14 +180,16 @@ const ListOfUsers = () => {
                       <button
                         onClick={() => handleRequest(user.id, "approved")}
                         className="btn btn-success"
+                        disabled={isUpdating}
                       >
-                        Approve
+                        {isUpdating ? "Updating..." : "Approve"}
                       </button>
                       <button
                         onClick={() => handleRequest(user.id, "declined")}
                         className="btn btn-danger"
+                        disabled={isUpdating}
                       >
-                        Decline
+                        {isUpdating ? "Updating..." : "Decline"}
                       </button>
                     </>
                   )}

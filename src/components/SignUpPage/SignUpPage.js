@@ -8,12 +8,13 @@ const SignUpPage = () => {
     username: "",
     gender: "",
     tennisLevel: "",
-    zipCode: "",
+    city: "",
     phoneNumber: "",
     password: "",
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const validateForm = () => {
@@ -32,16 +33,22 @@ const SignUpPage = () => {
       errors.tennisLevel = "Tennis level is required";
       formIsValid = false;
     }
-    if (!formData.zipCode) {
-      errors.zipCode = "Zip code is required";
+    if (!formData.city) {
+      errors.city = "City is required";
       formIsValid = false;
     }
     if (!formData.phoneNumber) {
       errors.phoneNumber = "Phone number is required";
       formIsValid = false;
+    } else if (!/^\d{10}$/.test(formData.phoneNumber)) {
+      errors.phoneNumber = "Phone number must be 10 digits";
+      formIsValid = false;
     }
     if (!formData.password) {
       errors.password = "Password is required";
+      formIsValid = false;
+    } else if (formData.password.length < 8) {
+      errors.password = "Password must be at least 8 characters long";
       formIsValid = false;
     }
     if (formData.password !== formData.confirmPassword) {
@@ -60,6 +67,7 @@ const SignUpPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
+      setIsLoading(true);
       try {
         const response = await axios.post(
           "https://your-api-url.com/api/register",
@@ -67,28 +75,22 @@ const SignUpPage = () => {
             username: formData.username,
             gender: formData.gender,
             tennisLevel: formData.tennisLevel,
-            zipCode: formData.zipCode,
+            city: formData.city,
             phoneNumber: formData.phoneNumber,
             password: formData.password,
-          },
+          }
         );
+        setIsLoading(false);
         navigate("/login"); // Redirect user to login page after successful registration
       } catch (error) {
+        setIsLoading(false);
         if (error.response) {
-          // The request was made and the server responded with a status code that falls out of the range of 2xx
-          console.log(error.response.data);
-          console.log(error.response.status);
-          console.log(error.response.headers);
           setErrors({
             form: "Registration Failed: " + error.response.data.message,
           });
         } else if (error.request) {
-          // The request was made but no response was received
-          console.log(error.request);
           setErrors({ form: "No response from the server" });
         } else {
-          // Something happened in setting up the request that triggered an Error
-          console.log("Error", error.message);
           setErrors({ form: "Error: " + error.message });
         }
       }
@@ -156,19 +158,19 @@ const SignUpPage = () => {
         </div>
 
         <div className="mb-3">
-          <label htmlFor="zipCode" className="form-label">
-            Zip Code
+          <label htmlFor="city" className="form-label">
+            City
           </label>
           <input
             type="text"
             className="form-control form-input"
-            id="zipCode"
-            name="zipCode"
-            value={formData.zipCode}
+            id="city"
+            name="city"
+            value={formData.city}
             onChange={handleChange}
           />
-          {errors.zipCode && (
-            <div className="text-danger">{errors.zipCode}</div>
+          {errors.city && (
+            <div className="text-danger">{errors.city}</div>
           )}
         </div>
 
@@ -224,7 +226,7 @@ const SignUpPage = () => {
         </div>
 
         <button type="submit" className="btn btn-primary">
-          Sign Up
+          {isLoading ? "Signing Up..." : "Sign Up"}
         </button>
         {errors.form && (
           <div className="alert alert-danger mt-3">{errors.form}</div>
